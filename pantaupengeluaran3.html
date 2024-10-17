@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencatatan Pengeluaran Harian (THB)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2, h3 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        thead {
+            background-color: #f2f2f2;
+        }
+
+        .total {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .periods {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .period {
+            padding: 10px;
+            background-color: #e7f4e4;
+            border-radius: 5px;
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Pencatatan Pengeluaran Harian (THB)</h2>
+
+        <!-- Form input pengeluaran -->
+        <div class="form-input">
+            <h3>Masukkan Pengeluaran</h3>
+            <label for="nama">Nama:</label>
+            <input type="text" id="nama" placeholder="Nama">
+
+            <label for="tanggal">Tanggal:</label>
+            <input type="date" id="tanggal">
+
+            <label for="jenis">Jenis Pengeluaran:</label>
+            <input type="text" id="jenis" placeholder="Jenis Pengeluaran">
+
+            <label for="jumlah">Jumlah Pengeluaran (THB):</label>
+            <input type="number" id="jumlah" placeholder="Jumlah Pengeluaran">
+
+            <button onclick="tambahPengeluaran()">Tambahkan Pengeluaran</button>
+        </div>
+
+        <!-- Tabel pengeluaran -->
+        <h3>Data Pengeluaran Harian</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Tanggal</th>
+                    <th>Jenis Pengeluaran</th>
+                    <th>Jumlah (THB)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-pengeluaran"></tbody>
+        </table>
+
+        <!-- Kolom target untuk tiap periode -->
+        <h3>Target Pengeluaran Per Periode</h3>
+        <label for="target1_10">Target Periode 1-10 (THB):</label>
+        <input type="number" id="target1_10" placeholder="Target Periode 1-10">
+        
+        <label for="target11_20">Target Periode 11-20 (THB):</label>
+        <input type="number" id="target11_20" placeholder="Target Periode 11-20">
+        
+        <label for="target21_31">Target Periode 21-31 (THB):</label>
+        <input type="number" id="target21_31" placeholder="Target Periode 21-31">
+
+        <!-- Total pengeluaran dan periode -->
+        <div class="total">
+            <h3>Total Pengeluaran Bulanan: THB <span id="total-pengeluaran">0</span></h3>
+            <div class="periods">
+                <div class="period">
+                    <h4>Periode 1-10</h4>
+                    <p>Total: THB <span id="total-periode-1-10">0</span></p>
+                    <p>Target: THB <span id="target-1-10">0</span></p>
+                    <p>Persentase: <span id="persen-1-10">0</span>%</p>
+                </div>
+                <div class="period">
+                    <h4>Periode 11-20</h4>
+                    <p>Total: THB <span id="total-periode-11-20">0</span></p>
+                    <p>Target: THB <span id="target-11-20">0</span></p>
+                    <p>Persentase: <span id="persen-11-20">0</span>%</p>
+                </div>
+                <div class="period">
+                    <h4>Periode 21-31</h4>
+                    <p>Total: THB <span id="total-periode-21-31">0</span></p>
+                    <p>Target: THB <span id="target-21-31">0</span></p>
+                    <p>Persentase: <span id="persen-21-31">0</span>%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pengeluaranData = JSON.parse(localStorage.getItem('pengeluaranData')) || [];
+
+        function tambahPengeluaran() {
+            const nama = document.getElementById('nama').value;
+            const tanggal = document.getElementById('tanggal').value;
+            const jenis = document.getElementById('jenis').value;
+            const jumlah = parseInt(document.getElementById('jumlah').value);
+
+            if (nama && tanggal && jenis && jumlah) {
+                pengeluaranData.push({ nama, tanggal, jenis, jumlah });
+                localStorage.setItem('pengeluaranData', JSON.stringify(pengeluaranData));
+
+                document.getElementById('nama').value = '';
+                document.getElementById('tanggal').value = '';
+                document.getElementById('jenis').value = '';
+                document.getElementById('jumlah').value = '';
+
+                tampilkanPengeluaran();
+                hitungTotalPengeluaran();
+            } else {
+                alert('Silakan lengkapi semua data pengeluaran.');
+            }
+        }
+
+        function tampilkanPengeluaran() {
+            const tabelPengeluaran = document.getElementById('tabel-pengeluaran');
+            tabelPengeluaran.innerHTML = '';
+
+            pengeluaranData.forEach((item, index) => {
+                const row = tabelPengeluaran.insertRow(index);
+                const cellNama = row.insertCell(0);
+                const cellTanggal = row.insertCell(1);
+                const cellJenis = row.insertCell(2);
+                const cellJumlah = row.insertCell(3);
+                const cellActions = row.insertCell(4);
+
+                cellNama.textContent = item.nama;
+                cellTanggal.textContent = item.tanggal;
+                cellJenis.textContent = item.jenis;
+                cellJumlah.textContent = `THB ${item.jumlah}`;
+                cellActions.innerHTML = `<button onclick="editPengeluaran(${index})">Edit</button> <button onclick="hapusPengeluaran(${index})">Hapus</button>`;
+            });
+        }
+
+        function editPengeluaran(index) {
+            const item = pengeluaranData[index];
+            document.getElementById('nama').value = item.nama;
+            document.getElementById('tanggal').value = item.tanggal;
+            document.getElementById('jenis').value = item.jenis;
+            document.getElementById('jumlah').value = item.jumlah;
+
+            pengeluaranData.splice(index, 1);
+            localStorage.setItem('pengeluaranData', JSON.stringify(pengeluaranData));
+            tampilkanPengeluaran();
+            hitungTotalPengeluaran();
+        }
+
+        function hapusPengeluaran(index) {
+            pengeluaranData.splice(index, 1);
+            localStorage.setItem('pengeluaranData', JSON.stringify(pengeluaranData));
+            tampilkanPengeluaran();
+            hitungTotalPengeluaran();
+        }
+
+        function hitungTotalPengeluaran() {
+            let totalPengeluaran = 0;
+            let total1_10 = 0;
+            let total11_20 = 0;
+            let total21_31 = 0;
+
+            pengeluaranData.forEach(item => {
+                totalPengeluaran += item.jumlah;
+
+                const tanggal = new Date(item.tanggal);
+                const day = tanggal.getDate();
+                if (day >= 1 && day <= 10) {
+                    total1_10 += item.jumlah;
+                } else if (day >= 11 && day <= 20) {
+                    total11_20 += item.jumlah;
+                } else if (day >= 21 && day <= 31) {
+                    total21_31 += item.jumlah;
+                }
+            });
+
+            const target1_10 = parseInt(document.getElementById('target1_10').value) || 0;
+            const target11_20 = parseInt(document.getElementById('target11_20').value) || 0;
+            const target21_31 = parseInt(document.getElementById('target21_31').value) || 0;
+
+            document.getElementById('total-pengeluaran').textContent = totalPengeluaran;
+            document.getElementById('total-periode-1-10').textContent = total1_10;
+            document.getElementById('total-periode-11-20').textContent = total11_20;
+            document.getElementById('total-periode-21-31').textContent = total21_31;
+
+            document.getElementById('target-1-10').textContent = target1_10;
+            document.getElementById('target-11-20').textContent = target11_20;
+            document.getElementById('target-21-31').textContent = target21_31;
+
+            document.getElementById('persen-1-10').textContent = target1_10 ? ((total1_10 / target1_10) * 100).toFixed(2) : 0;
+            document.getElementById('persen-11-20').textContent = target11_20 ? ((total11_20 / target11_20) * 100).toFixed(2) : 0;
+            document.getElementById('persen-21-31').textContent = target21_31 ? ((total21_31 / target21_31) * 100).toFixed(2) : 0;
+        }
+
+        window.onload = function() {
+            tampilkanPengeluaran();
+            hitungTotalPengeluaran();
+        }
+    </script>
+</body>
+</html>
